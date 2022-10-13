@@ -109,7 +109,9 @@ func (l *CorrLayer) Forward(input []*mat.Dense) []*mat.Dense {
 
 	for i := 0; i < l.depth; i++ {
 		for j := 0; j < l.inputDepth; j++ {
-			l.outputCache[i].Add(l.outputCache[i], correlateValid(l.inputCache[j], l.kernels[i][j]))
+			c := correlateValid(l.inputCache[j], l.kernels[i][j])
+
+			l.outputCache[i].Add(l.outputCache[i], c)
 		}
 	}
 
@@ -176,7 +178,7 @@ func (l *CorrLayer) MarshalJSON() ([]byte, error) {
 		Kx:         l.kernelShape.x,
 		Ky:         l.kernelShape.y,
 		Kz:         l.kernelShape.z,
-		Kw:         l.kernelShape.z,
+		Kw:         l.kernelShape.w,
 		Kernels:    make([][][]byte, len(l.kernels)),
 		Biases:     make([][]byte, len(l.biases)),
 	}
