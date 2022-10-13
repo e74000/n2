@@ -1,4 +1,4 @@
-module n2
+module github.com/e74000/n2
 
 go 1.19
 
