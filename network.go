@@ -6,7 +6,6 @@ import (
 	"strconv"
 )
 
-// TODO: Add UnmarshallBinary() to layer interface
 // TODO: Add a simpler Network constructor
 
 var (
@@ -19,12 +18,23 @@ var (
 		"SiLU":     NewActSiLU,
 	}
 	// LayerTypes can be modified to add custom layers types when you are parsing Network JSON files
-	LayerTypes = map[string]Layer{
-		"Dense":      &DenseLayer{},
-		"Activation": &ActivationLayer{},
-		"MaxPool":    &MaxPoolLayer{},
-		"Corr":       &CorrLayer{},
-		"Flatten":    &FlattenLayer{},
+	// I would like to replace this with something better soon - just not sure how to store layer type int the JSON file#
+	LayerTypes = map[string]func() Layer{
+		"Dense": func() Layer {
+			return new(DenseLayer)
+		},
+		"Activation": func() Layer {
+			return new(ActivationLayer)
+		},
+		"MaxPool": func() Layer {
+			return new(MaxPoolLayer)
+		},
+		"Corr": func() Layer {
+			return new(CorrLayer)
+		},
+		"Flatten": func() Layer {
+			return new(FlattenLayer)
+		},
 	}
 )
 
@@ -74,7 +84,7 @@ func (n *Network) Feedforward(inputs []*mat.Dense) []*mat.Dense {
 	return activation
 }
 
-// Backpropagate backpropagates the cost gradient through the Layers
+// Backpropagate propagates the cost gradient backwards through the Layers
 // The cost gradient is calculated using mean squared error
 func (n *Network) Backpropagate(inputs, label []*mat.Dense) (float64, float64) {
 	outputs := n.Feedforward(inputs)
@@ -98,7 +108,7 @@ func (n *Network) UnmarshalJSON(bytes []byte) error {
 	n.Layers = make([]Layer, len(layerMatches))
 
 	for i, layerMatch := range layerMatches {
-		n.Layers[i] = LayerTypes[layerMatch[2]]
+		n.Layers[i] = LayerTypes[layerMatch[2]]()
 		err := n.Layers[i].UnmarshalJSON([]byte(layerMatch[0]))
 		if err != nil {
 			return err
