@@ -58,7 +58,12 @@ func (l *SoftmaxLayer) Backward(outputGradient []*mat.Dense, _ float64) (inputGr
 
 	ident.Sub(ident, tiled.T())
 	tiled.MulElem(tiled, ident)
-	tiled.Product(tiled, outputGradient[0])
 
-	return []*mat.Dense{tiled}
+	inputGradient = []*mat.Dense{
+		mat.NewDense(r, 1, nil),
+	}
+
+	inputGradient[0].Product(tiled, outputGradient[0])
+
+	return inputGradient
 }
