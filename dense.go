@@ -13,7 +13,7 @@ type DenseLayer struct {
 	outputCache []*mat.Dense
 }
 
-func newDense(inputs, outputs int) (l *DenseLayer) {
+func NewDense(inputs, outputs int) (l *DenseLayer) {
 	l = &DenseLayer{
 		Weights: mat.NewDense(outputs, inputs, randArr(outputs*inputs, func(n int) float64 {
 			dist := distuv.Uniform{

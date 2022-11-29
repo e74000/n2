@@ -13,22 +13,22 @@ var (
 )
 
 func NewActTanH() *ActivationLayer {
-	return newActivation(tanh)
+	return NewActivation(tanh)
 }
 
 func NewActSigmoid() *ActivationLayer {
-	return newActivation(sigmoid)
+	return NewActivation(sigmoid)
 }
 
 func NewActSoftPlus() *ActivationLayer {
-	return newActivation(softPlus)
+	return NewActivation(softPlus)
 }
 
 func NewActSiLU() *ActivationLayer {
-	return newActivation(silu)
+	return NewActivation(silu)
 }
 
-func newActivation(aFunc alg.Term) (l *ActivationLayer) {
+func NewActivation(aFunc alg.Term) (l *ActivationLayer) {
 	l = &ActivationLayer{
 		AFunc: aFunc,
 		PFunc: aFunc.Dx(),

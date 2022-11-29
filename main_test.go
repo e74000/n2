@@ -15,7 +15,7 @@ func TestNetwork_ToGob(t *testing.T) {
 		NewCorr([3]int{28, 28, 1}, 5, 3),
 		NewCorr([3]int{24, 24, 1}, 3, 3),
 		NewFlatten(),
-		newDense(22*22*3, 50),
+		NewDense(22*22*3, 50),
 		NewActSigmoid(),
 	}, 0.1)
 
