@@ -5,6 +5,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"math"
 	"math/rand"
+	"reflect"
 	"testing"
 )
 
@@ -19,6 +20,7 @@ func TestNetwork_ToGob(t *testing.T) {
 		NewFlatten(),
 		NewDense(22*22*3, 50),
 		NewActSigmoid(),
+		NewSoftmaxLayer(),
 	)
 
 	n.LearnRate = 0.1
@@ -32,6 +34,12 @@ func TestNetwork_ToGob(t *testing.T) {
 	err = on.FromGob(bytes)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	for i, layer := range n.Layers {
+		if reflect.TypeOf(layer) != reflect.TypeOf(on.Layers[i]) {
+			t.Fail()
+		}
 	}
 }
 

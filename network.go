@@ -17,6 +17,7 @@ var (
 		&DenseLayer{},
 		&MaxPoolLayer{},
 		&CorrLayer{},
+		&SoftmaxLayer{},
 	}
 )
 
