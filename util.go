@@ -6,15 +6,15 @@ import (
 )
 
 type intV2 struct {
-	x, y int
+	X, Y int
 }
 
 type intV3 struct {
-	x, y, z int
+	X, Y, Z int
 }
 
 type intV4 struct {
-	x, y, z, w int
+	X, Y, Z, W int
 }
 
 func wrap(f func(float64) float64) func(i, j int, v float64) float64 {
@@ -63,12 +63,12 @@ func rotateMat180(input *mat.Dense) *mat.Dense {
 }
 
 func makeT4d(shape intV4, value func(n int) float64) [][]*mat.Dense {
-	out := make([][]*mat.Dense, shape.w)
+	out := make([][]*mat.Dense, shape.W)
 
-	for i := 0; i < shape.w; i++ {
-		out[i] = make([]*mat.Dense, shape.z)
-		for j := 0; j < shape.z; j++ {
-			out[i][j] = mat.NewDense(shape.y, shape.x, randArr(shape.y*shape.x, value))
+	for i := 0; i < shape.W; i++ {
+		out[i] = make([]*mat.Dense, shape.Z)
+		for j := 0; j < shape.Z; j++ {
+			out[i][j] = mat.NewDense(shape.Y, shape.X, randArr(shape.Y*shape.X, value))
 		}
 	}
 
@@ -76,10 +76,10 @@ func makeT4d(shape intV4, value func(n int) float64) [][]*mat.Dense {
 }
 
 func makeT3d(shape intV3, value func(n int) float64) []*mat.Dense {
-	out := make([]*mat.Dense, shape.z)
+	out := make([]*mat.Dense, shape.Z)
 
-	for i := 0; i < shape.z; i++ {
-		out[i] = mat.NewDense(shape.y, shape.x, randArr(shape.y*shape.x, value))
+	for i := 0; i < shape.Z; i++ {
+		out[i] = mat.NewDense(shape.Y, shape.X, randArr(shape.Y*shape.X, value))
 	}
 
 	return out
@@ -104,17 +104,17 @@ func reshapeT3toT1(input []*mat.Dense) []*mat.Dense {
 
 func reshapeT1toT3(input []*mat.Dense, shape intV3) []*mat.Dense {
 	ir, ic := input[0].Dims()
-	if ir*ic != shape.x*shape.y*shape.z {
+	if ir*ic != shape.X*shape.Y*shape.Z {
 		panic("Shape doesn't match input!")
 	}
 
-	out := make([]*mat.Dense, shape.z)
+	out := make([]*mat.Dense, shape.Z)
 
-	for d := 0; d < shape.z; d++ {
-		out[d] = mat.NewDense(shape.y, shape.x, nil)
-		for i := 0; i < shape.y; i++ {
-			for j := 0; j < shape.x; j++ {
-				out[d].Set(i, j, input[0].At(d*shape.y*shape.x+i*shape.x+j, 0))
+	for d := 0; d < shape.Z; d++ {
+		out[d] = mat.NewDense(shape.Y, shape.X, nil)
+		for i := 0; i < shape.Y; i++ {
+			for j := 0; j < shape.X; j++ {
+				out[d].Set(i, j, input[0].At(d*shape.Y*shape.X+i*shape.X+j, 0))
 			}
 		}
 	}

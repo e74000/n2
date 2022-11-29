@@ -1,14 +1,13 @@
 package n2
 
 import (
-	"encoding/json"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
 type DenseLayer struct {
-	weights *mat.Dense
-	biases  *mat.Dense
+	Weights *mat.Dense
+	Biases  *mat.Dense
 
 	inputCache  []*mat.Dense
 	outputCache []*mat.Dense
@@ -16,7 +15,7 @@ type DenseLayer struct {
 
 func newDense(inputs, outputs int) (l *DenseLayer) {
 	l = &DenseLayer{
-		weights: mat.NewDense(outputs, inputs, randArr(outputs*inputs, func(n int) float64 {
+		Weights: mat.NewDense(outputs, inputs, randArr(outputs*inputs, func(n int) float64 {
 			dist := distuv.Uniform{
 				Min: -1,
 				Max: 1,
@@ -24,7 +23,7 @@ func newDense(inputs, outputs int) (l *DenseLayer) {
 
 			return dist.Rand()
 		})),
-		biases: mat.NewDense(outputs, 1, randArr(outputs, func(n int) float64 {
+		Biases: mat.NewDense(outputs, 1, randArr(outputs, func(n int) float64 {
 			dist := distuv.Uniform{
 				Min: -1,
 				Max: 1,
@@ -38,11 +37,11 @@ func newDense(inputs, outputs int) (l *DenseLayer) {
 }
 
 func (l *DenseLayer) Forward(inputs []*mat.Dense) []*mat.Dense {
-	r, c := l.biases.Dims()
+	r, c := l.Biases.Dims()
 	out := mat.NewDense(r, c, nil)
 
-	out.Product(l.weights, inputs[0])
-	out.Add(out, l.biases)
+	out.Product(l.Weights, inputs[0])
+	out.Add(out, l.Biases)
 
 	copyT3(&l.inputCache, &inputs)
 	copyT3(&l.outputCache, &[]*mat.Dense{out})
@@ -51,7 +50,7 @@ func (l *DenseLayer) Forward(inputs []*mat.Dense) []*mat.Dense {
 }
 
 func (l *DenseLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (inputGradient []*mat.Dense) {
-	rw, cw := l.weights.Dims()
+	rw, cw := l.Weights.Dims()
 	weightsGradient := mat.NewDense(rw, cw, nil)
 
 	weightsGradient.Product(outputGradient[0], l.inputCache[0].T())
@@ -59,63 +58,13 @@ func (l *DenseLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (i
 	biasGradient := mat.DenseCopyOf(outputGradient[0])
 
 	inputGradient = []*mat.Dense{mat.NewDense(cw, 1, nil)}
-	inputGradient[0].Product(l.weights.T(), outputGradient[0])
+	inputGradient[0].Product(l.Weights.T(), outputGradient[0])
 
 	weightsGradient.Scale(learnRate, weightsGradient)
 	biasGradient.Scale(learnRate, biasGradient)
 
-	l.weights.Sub(l.weights, weightsGradient)
-	l.biases.Sub(l.biases, biasGradient)
+	l.Weights.Sub(l.Weights, weightsGradient)
+	l.Biases.Sub(l.Biases, biasGradient)
 
 	return inputGradient
-}
-
-type DenseLayerJSON struct {
-	LType   string
-	Weights []byte
-	Biases  []byte
-}
-
-func (l *DenseLayer) MarshalJSON() ([]byte, error) {
-	wb, err := l.weights.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	bb, err := l.biases.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	lj := &DenseLayerJSON{
-		LType:   "Dense",
-		Weights: wb,
-		Biases:  bb,
-	}
-
-	return json.Marshal(lj)
-}
-
-func (l *DenseLayer) UnmarshalJSON(bytes []byte) error {
-	lj := &DenseLayerJSON{}
-
-	var err error
-	err = json.Unmarshal(bytes, lj)
-	if err != nil {
-		return err
-	}
-
-	l.weights = new(mat.Dense)
-	err = l.weights.UnmarshalBinary(lj.Weights)
-	if err != nil {
-		return err
-	}
-
-	l.weights = new(mat.Dense)
-	err = l.weights.UnmarshalBinary(lj.Biases)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

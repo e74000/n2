@@ -2,8 +2,7 @@ package n2
 
 import (
 	_ "embed"
-	"encoding/json"
-	"gonum.org/v1/gonum/mat"
+	"fmt"
 	"testing"
 )
 
@@ -11,32 +10,35 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestNetwork_UnmarshalJSON(t *testing.T) {
+func TestNetwork_ToGob(t *testing.T) {
 	n := NewNetwork([]Layer{
-		NewCorr([3]int{28, 28, 1}, 3, 3),
+		NewCorr([3]int{28, 28, 1}, 5, 3),
+		NewCorr([3]int{24, 24, 1}, 3, 3),
+		NewFlatten(),
+		newDense(22*22*3, 50),
+		NewActSigmoid(),
 	}, 0.1)
 
-	empty := mat.NewDense(28, 28, nil)
-
-	t2 := n.Feedforward([]*mat.Dense{empty})
-
-	nb, err := json.Marshal(n)
+	bytes, err := n.ToGob()
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
-	on := &Network{}
-
-	err = json.Unmarshal(nb, on)
+	on := Network{}
+	err = on.FromGob(bytes)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
-	out := on.Feedforward([]*mat.Dense{empty})
+	aT, aG := n.Layers[4].(*ActivationLayer).AFunc.Tokenise(), on.Layers[4].(*ActivationLayer).AFunc.Tokenise()
+	pT, pG := n.Layers[4].(*ActivationLayer).PFunc.Tokenise(), on.Layers[4].(*ActivationLayer).PFunc.Tokenise()
 
-	for i := 0; i < len(out); i++ {
-		if !mat.Equal(out[i], t2[i]) {
-			t.Fail()
-		}
+	fmt.Println(aT.String(), aG.String())
+	fmt.Println(pT.String(), pG.String())
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(n.Layers[i])
+		fmt.Println(on.Layers[i])
+		fmt.Println()
 	}
 }

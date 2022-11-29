@@ -1,42 +1,38 @@
 package n2
 
 import (
+	"bytes"
+	"encoding/gob"
+	"github.com/e74000/alg"
 	"gonum.org/v1/gonum/mat"
-	"regexp"
-	"strconv"
 )
 
 // TODO: Add a simpler Network constructor
 
 var (
-	// ATypes can be modified to add custom activation functions when you are parsing Network JSON files
-	ATypes = map[string]func() *ActivationLayer{
-		"TanH":     NewActTanH,
-		"Sigmoid":  NewActSigmoid,
-		"ReLU":     NewActReLU,
-		"SoftPlus": NewActSoftPlus,
-		"SiLU":     NewActSiLU,
-	}
-	// LayerTypes can be modified to add custom layers types when you are parsing Network JSON files
-	// I would like to replace this with something better soon - just not sure how to store layer type int the JSON file#
-	LayerTypes = map[string]func() Layer{
-		"Dense": func() Layer {
-			return new(DenseLayer)
-		},
-		"Activation": func() Layer {
-			return new(ActivationLayer)
-		},
-		"MaxPool": func() Layer {
-			return new(MaxPoolLayer)
-		},
-		"Corr": func() Layer {
-			return new(CorrLayer)
-		},
-		"Flatten": func() Layer {
-			return new(FlattenLayer)
-		},
+	// LayerTypes
+	layerTypes = []Layer{
+		&ActivationLayer{},
+		&FlattenLayer{},
+		&DenseLayer{},
+		&MaxPoolLayer{},
+		&CorrLayer{},
 	}
 )
+
+func RegisterLayerType(layer Layer) {
+	layerTypes = append(layerTypes, layer)
+}
+
+func registerAll() {
+	for _, layerType := range layerTypes {
+		gob.Register(layerType)
+	}
+
+	for _, term := range alg.Terms {
+		gob.Register(term)
+	}
+}
 
 // Layer implements Forward, Backward, MarshalJSON and UnmarshalJSON
 // * Forward: passes data forward through the network
@@ -44,13 +40,6 @@ var (
 type Layer interface {
 	Forward([]*mat.Dense) []*mat.Dense
 	Backward([]*mat.Dense, float64) []*mat.Dense
-	MarshalJSON() ([]byte, error)
-	UnmarshalJSON([]byte) error
-}
-
-type CostFunc struct {
-	cFunc func(output, label []*mat.Dense) float64
-	pFunc func(output, label []*mat.Dense) []*mat.Dense
 }
 
 // Network is a struct containing a neural network
@@ -99,28 +88,32 @@ func (n *Network) Backpropagate(inputs, label []*mat.Dense) (float64, float64) {
 	return err, closeEnough(outputs, label)
 }
 
-func (n *Network) UnmarshalJSON(bytes []byte) error {
-	rType := regexp.MustCompile("{\"(LType)\"\\s*:\"(\\w+)\"[,\":\\w\\[\\]/+=]+}")
-	rLearnRate := regexp.MustCompile("\"(LearnRate)\"\\s*:([\\w.]+)")
+// ToGob converts the network into a file using the gob format
+func (n *Network) ToGob() ([]byte, error) {
+	var buffer bytes.Buffer
 
-	layerMatches := rType.FindAllStringSubmatch(string(bytes), -1)
+	registerAll()
 
-	n.Layers = make([]Layer, len(layerMatches))
-
-	for i, layerMatch := range layerMatches {
-		n.Layers[i] = LayerTypes[layerMatch[2]]()
-		err := n.Layers[i].UnmarshalJSON([]byte(layerMatch[0]))
-		if err != nil {
-			return err
-		}
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(n)
+	if err != nil {
+		panic(err)
 	}
 
-	ls := rLearnRate.FindStringSubmatch(string(bytes))
+	return buffer.Bytes(), nil
+}
 
-	var err error
-	n.LearnRate, err = strconv.ParseFloat(ls[2], 64)
+// FromGob converts a file into a network
+func (n *Network) FromGob(b []byte) error {
+	*n = Network{}
+
+	registerAll()
+
+	decoder := gob.NewDecoder(bytes.NewReader(b))
+	err := decoder.Decode(&n)
+
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	return nil

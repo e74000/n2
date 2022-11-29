@@ -1,91 +1,46 @@
 package n2
 
 import (
-	"encoding/json"
+	"github.com/e74000/alg"
 	"gonum.org/v1/gonum/mat"
-	"math"
 )
 
-func tanh(v float64) float64 {
-	return math.Tanh(v)
-}
-
-func tanhPrime(v float64) float64 {
-	return 1 - math.Pow(math.Tanh(v), 2)
-}
-
-func sigmoid(v float64) float64 {
-	return 1 / (1 + math.Exp(-v))
-}
-
-func sigmoidPrime(v float64) float64 {
-	return (1 / (1 + math.Exp(-v))) * (-math.Exp(-v) / (1 + math.Exp(-v)))
-}
-
-func relu(v float64) float64 {
-	if v > 0 {
-		return v
-	}
-
-	return 0
-}
-
-func reluPrime(v float64) float64 {
-	if v > 0 {
-		return 1
-	}
-
-	return 0
-}
-
-func softPlus(v float64) float64 {
-	return math.Log(1 + math.Exp(v))
-}
-
-func silu(v float64) float64 {
-	return v / (1 + math.Exp(-v))
-}
-
-func siluPrime(v float64) float64 {
-	return (1 + math.Exp(-v)*(1+v)) / math.Pow(1+math.Exp(-v), 2)
-}
+var (
+	tanh     = alg.Tanh{X: alg.X{}}
+	sigmoid  = alg.Div{N: alg.S(1), D: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.Sx{S: -1}}}}
+	softPlus = alg.Ln{X: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.X{}}}}
+	silu     = alg.Div{N: alg.X{}, D: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.Sx{S: -1}}}}
+)
 
 func NewActTanH() *ActivationLayer {
-	return newActivation(tanh, tanhPrime, "TanH")
+	return newActivation(tanh)
 }
 
 func NewActSigmoid() *ActivationLayer {
-	return newActivation(sigmoid, sigmoidPrime, "Sigmoid")
-}
-
-func NewActReLU() *ActivationLayer {
-	return newActivation(relu, reluPrime, "ReLU")
+	return newActivation(sigmoid)
 }
 
 func NewActSoftPlus() *ActivationLayer {
-	return newActivation(softPlus, sigmoid, "ReLU")
+	return newActivation(softPlus)
 }
 
 func NewActSiLU() *ActivationLayer {
-	return newActivation(silu, siluPrime, "SiLU")
+	return newActivation(silu)
 }
 
-type ActivationLayer struct {
-	aFunc func(v float64) float64
-	pFunc func(v float64) float64
-	aType string
-
-	inputCache []*mat.Dense
-}
-
-func newActivation(aFunc, pFunc func(v float64) float64, aType string) (l *ActivationLayer) {
+func newActivation(aFunc alg.Term) (l *ActivationLayer) {
 	l = &ActivationLayer{
-		aFunc: aFunc,
-		pFunc: pFunc,
-		aType: aType,
+		AFunc: aFunc,
+		PFunc: aFunc.Dx(),
 	}
 
 	return l
+}
+
+type ActivationLayer struct {
+	AFunc      alg.Term
+	PFunc      alg.Term
+	inputCache []*mat.Dense
 }
 
 func (l *ActivationLayer) Forward(inputs []*mat.Dense) []*mat.Dense {
@@ -93,7 +48,7 @@ func (l *ActivationLayer) Forward(inputs []*mat.Dense) []*mat.Dense {
 	for d := 0; d < len(inputs); d++ {
 		r, c := inputs[d].Dims()
 		out[d] = mat.NewDense(r, c, nil)
-		out[d].Apply(wrap(l.aFunc), inputs[d])
+		out[d].Apply(wrap(l.AFunc.E), inputs[d])
 	}
 
 	copyT3(&l.inputCache, &inputs)
@@ -108,38 +63,10 @@ func (l *ActivationLayer) Backward(outputGradient []*mat.Dense, _ float64) (inpu
 		r, c := l.inputCache[d].Dims()
 		inputGradient[d] = mat.NewDense(r, c, nil)
 
-		inputGradient[d].Apply(wrap(l.pFunc), l.inputCache[d])
+		inputGradient[d].Apply(wrap(l.PFunc.E), l.inputCache[d])
 
 		inputGradient[d].MulElem(outputGradient[d], inputGradient[d])
 	}
 
 	return inputGradient
-}
-
-type ActivationLayerJSON struct {
-	LType string
-	AType string
-}
-
-func (l *ActivationLayer) MarshalJSON() ([]byte, error) {
-	lj := &ActivationLayerJSON{
-		LType: "Activation",
-		AType: l.aType,
-	}
-
-	return json.Marshal(lj)
-}
-
-func (l *ActivationLayer) UnmarshalJSON(bytes []byte) error {
-	lj := &ActivationLayerJSON{}
-
-	var err error
-	err = json.Unmarshal(bytes, lj)
-	if err != nil {
-		return err
-	}
-
-	*l = *ATypes[lj.AType]()
-
-	return nil
 }
