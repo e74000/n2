@@ -109,7 +109,6 @@ func (l *CorrLayer) Forward(input []*mat.Dense) []*mat.Dense {
 	for i := 0; i < l.Depth; i++ {
 		for j := 0; j < l.InputDepth; j++ {
 			c := correlateValid(l.inputCache[j], l.Kernels[i][j])
-
 			l.outputCache[i].Add(l.outputCache[i], c)
 		}
 	}
@@ -141,11 +140,11 @@ func (l *CorrLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (in
 	for i := 0; i < l.Depth; i++ {
 		for j := 0; j < l.InputDepth; j++ {
 			kgs.Scale(learnRate, kernelGradient[i][j])
-			l.Kernels[i][j].Sub(l.Kernels[i][j], kgs)
+			l.Kernels[i][j].Add(l.Kernels[i][j], kgs)
 		}
 
 		ogs.Scale(learnRate, outputGradient[i])
-		l.Biases[i].Sub(l.Biases[i], ogs)
+		l.Biases[i].Add(l.Biases[i], ogs)
 	}
 
 	return inputGradient
