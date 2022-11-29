@@ -11,13 +11,15 @@ func TestMain(m *testing.M) {
 }
 
 func TestNetwork_ToGob(t *testing.T) {
-	n := NewNetwork([]Layer{
+	n := NewNetwork(
 		NewCorr([3]int{28, 28, 1}, 5, 3),
 		NewCorr([3]int{24, 24, 1}, 3, 3),
 		NewFlatten(),
 		NewDense(22*22*3, 50),
 		NewActSigmoid(),
-	}, 0.1)
+	)
+
+	n.LearnRate = 0.1
 
 	bytes, err := n.ToGob()
 	if err != nil {

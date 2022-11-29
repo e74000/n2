@@ -10,6 +10,8 @@ github.com/e74000/alg v0.0.0-20221125125913-2a57ceeb39f8 h1:YWst3QE+ktW3CFqkfCGk
 github.com/e74000/alg v0.0.0-20221125125913-2a57ceeb39f8/go.mod h1:zHmo4DxVhWLLQyzBTrRzVXSoARDxQaZVshg/ojLvSa0=
 github.com/e74000/alg v0.0.0-20221129141733-eb32de2caadf h1:u4r1sfl21UmzKm7XbhOOPRMTWqfLZCgMzZAD64j6KiY=
 github.com/e74000/alg v0.0.0-20221129141733-eb32de2caadf/go.mod h1:UrtT7ljIjMyJu+gW7T7XsK+mepGXLGJyNUb3deFKvYQ=
+github.com/e74000/alg v0.0.0-20221129153948-7be4b7f0dec5 h1:Yy7fWuGDVC38kCK6uQYRLjdVP41WUxONAVuMOciMYyE=
+github.com/e74000/alg v0.0.0-20221129153948-7be4b7f0dec5/go.mod h1:UrtT7ljIjMyJu+gW7T7XsK+mepGXLGJyNUb3deFKvYQ=
 github.com/e74000/bimap v0.0.0-20221128111058-621b6a12c600 h1:72hlbkIawGohgn/19gBnLLH5Rty7yD6MhLngOsdcsoQ=
 github.com/e74000/bimap v0.0.0-20221128111058-621b6a12c600/go.mod h1:5uN65NfaZGNQCenHSwIpvQmyra//mZNFrP5gn2Py4jI=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=

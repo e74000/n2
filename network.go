@@ -51,10 +51,10 @@ type Network struct {
 }
 
 // NewNetwork is a simple constructor for Network
-func NewNetwork(layers []Layer, learnRate float64) (n *Network) {
+func NewNetwork(layers ...Layer) (n *Network) {
 	n = &Network{
 		Layers:    layers,
-		LearnRate: learnRate,
+		LearnRate: 0,
 	}
 
 	return n
