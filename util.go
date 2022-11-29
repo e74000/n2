@@ -2,7 +2,6 @@ package n2
 
 import (
 	"gonum.org/v1/gonum/mat"
-	"math"
 )
 
 type intV2 struct {
@@ -165,19 +164,4 @@ func mSqErrPrime(output, label []*mat.Dense) []*mat.Dense {
 	}
 
 	return out
-}
-
-func closeEnough(outputs, label []*mat.Dense) float64 {
-	var total float64
-	for i, l := range label {
-		r, c := l.Dims()
-		temp := mat.NewDense(r, c, nil)
-
-		temp.Sub(l, outputs[i])
-		temp.Apply(wrap(math.Abs), temp)
-
-		total += mat.Sum(temp)
-	}
-
-	return total
 }

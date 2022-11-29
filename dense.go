@@ -63,8 +63,8 @@ func (l *DenseLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (i
 	weightsGradient.Scale(learnRate, weightsGradient)
 	biasGradient.Scale(learnRate, biasGradient)
 
-	l.Weights.Sub(l.Weights, weightsGradient)
-	l.Biases.Sub(l.Biases, biasGradient)
+	l.Weights.Add(l.Weights, weightsGradient)
+	l.Biases.Add(l.Biases, biasGradient)
 
 	return inputGradient
 }

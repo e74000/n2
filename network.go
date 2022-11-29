@@ -75,7 +75,7 @@ func (n *Network) Feedforward(inputs []*mat.Dense) []*mat.Dense {
 
 // Backpropagate propagates the cost gradient backwards through the Layers
 // The cost gradient is calculated using mean squared error
-func (n *Network) Backpropagate(inputs, label []*mat.Dense) (float64, float64) {
+func (n *Network) Backpropagate(inputs, label []*mat.Dense) (cost float64, grad []*mat.Dense) {
 	outputs := n.Feedforward(inputs)
 	err := mSqErr(outputs, label)
 
@@ -85,7 +85,7 @@ func (n *Network) Backpropagate(inputs, label []*mat.Dense) (float64, float64) {
 		errGrad = n.Layers[i].Backward(errGrad, n.LearnRate)
 	}
 
-	return err, closeEnough(outputs, label)
+	return err, errGrad
 }
 
 // ToGob converts the network into a file using the gob format
