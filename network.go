@@ -91,8 +91,16 @@ func (n *Network) Backpropagate(inputs, label []*mat.Dense) (loss float64, errGr
 
 	errGrad = mSqErrPrime(outputs, label)
 
+	if t3dHasNan(errGrad) {
+		panic("Initial error gradient has NaN")
+	}
+
 	for i := len(n.Layers) - 1; i >= 0; i-- {
 		errGrad = n.Layers[i].Backward(errGrad, n.LearnRate)
+
+		if t3dHasNan(errGrad) {
+			panic(fmt.Sprintf("Layer %d induced a NaN", i))
+		}
 	}
 
 	return err, errGrad
