@@ -1,6 +1,7 @@
 package n2
 
 import (
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -164,4 +165,14 @@ func mSqErrPrime(output, label []*mat.Dense) []*mat.Dense {
 	}
 
 	return out
+}
+
+func t3dHasNan(t3d []*mat.Dense) bool {
+	for _, dense := range t3d {
+		if floats.HasNaN(dense.RawMatrix().Data) {
+			return true
+		}
+	}
+
+	return false
 }

@@ -3,6 +3,7 @@ package n2
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"github.com/e74000/alg"
 	"gonum.org/v1/gonum/mat"
 )
@@ -17,6 +18,7 @@ var (
 		&DenseLayer{},
 		&MaxPoolLayer{},
 		&CorrLayer{},
+		&SoftmaxLayer{},
 	}
 )
 
@@ -66,8 +68,16 @@ func (n *Network) Feedforward(inputs []*mat.Dense) []*mat.Dense {
 	var activation []*mat.Dense
 	copyT3(&activation, &inputs)
 
-	for _, layer := range n.Layers {
+	if t3dHasNan(activation) {
+		panic("Input has NaN")
+	}
+
+	for i, layer := range n.Layers {
 		activation = layer.Forward(activation)
+
+		if t3dHasNan(activation) {
+			panic(fmt.Sprintf("Layer (%d) had NaN", i))
+		}
 	}
 
 	return activation

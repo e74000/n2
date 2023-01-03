@@ -116,6 +116,7 @@ func (l *CorrLayer) Forward(input []*mat.Dense) []*mat.Dense {
 	return l.outputCache
 }
 
+// Backward There is something very wrong with the maths for this method
 func (l *CorrLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (inputGradient []*mat.Dense) {
 	kernelGradient := makeT4d(l.KernelShape, func(n int) float64 {
 		return 0
