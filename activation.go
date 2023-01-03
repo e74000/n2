@@ -10,12 +10,19 @@ var (
 	sigmoid  = alg.Div{N: alg.S(1), D: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.Sx{S: -1}}}}
 	softPlus = alg.Ln{X: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.X{}}}}
 	silu     = alg.Div{N: alg.X{}, D: alg.Add{A: alg.S(1), B: alg.Exp{X: alg.Sx{S: -1}}}}
+	relu     = alg.Greater{
+		A:    alg.X{},
+		B:    alg.S(0),
+		If:   alg.X{},
+		Else: alg.S(0),
+	}
 )
 
 func NewActTanH() *ActivationLayer {
 	return NewActivation(tanh)
 }
 
+// NewActSigmoid can overflow float64 given big inputs
 func NewActSigmoid() *ActivationLayer {
 	return NewActivation(sigmoid)
 }
@@ -26,6 +33,10 @@ func NewActSoftPlus() *ActivationLayer {
 
 func NewActSiLU() *ActivationLayer {
 	return NewActivation(silu)
+}
+
+func NewActRelu() *ActivationLayer {
+	return NewActivation(relu)
 }
 
 func NewActivation(aFunc alg.Term) (l *ActivationLayer) {
