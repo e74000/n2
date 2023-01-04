@@ -2,6 +2,7 @@ package n2
 
 import (
 	"gonum.org/v1/gonum/mat"
+	"math"
 )
 
 func tile(vec *mat.Dense, n int) *mat.Dense {
@@ -42,11 +43,14 @@ func NewSoftmaxLayer() (l *SoftmaxLayer) {
 func (l *SoftmaxLayer) Forward(inputs []*mat.Dense) []*mat.Dense {
 	copyT3(&l.outputCache, &inputs)
 
-	sum := mat.Sum(inputs[0])
+	r, c := inputs[0].Dims()
+	exp := mat.NewDense(r, c, nil)
+	exp.Apply(wrap(math.Exp), inputs[0])
+	sum := mat.Sum(exp)
 
 	l.outputCache[0].Apply(func(_, _ int, v float64) float64 {
 		return v / sum
-	}, inputs[0])
+	}, exp)
 
 	return l.outputCache
 }
