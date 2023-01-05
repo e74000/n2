@@ -145,7 +145,7 @@ func (l *CorrLayer) Backward(outputGradient []*mat.Dense, learnRate float64) (in
 		}
 
 		ogs.Scale(learnRate, outputGradient[i])
-		l.Biases[i].Add.Biases[i], ogs)
+		l.Biases[i].Add(Biases[i], ogs)
 	}
 
 	return inputGradient
